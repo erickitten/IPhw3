@@ -191,6 +191,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ImageProcesser.h" />
     <ClInclude Include="IPhw3.h" />
     <ClInclude Include="IPhw3Dlg.h" />
     <ClInclude Include="Resource.h" />
@@ -198,6 +199,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ImageProcesser.cpp" />
     <ClCompile Include="IPhw3.cpp" />
     <ClCompile Include="IPhw3Dlg.cpp" />
     <ClCompile Include="stdafx.cpp">

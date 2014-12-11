@@ -104,6 +104,7 @@ HCURSOR CIPhw3Dlg::OnQueryDragIcon()
 	int histSize[] = {20,20};
 	int channels[] = { 0, 1 };
 
+//distence bewteen 2 points
 double CIPhw3Dlg::pointDist(cv::Point a,cv::Point b)  
 {  
 	return sqrt( (double)((a.x-b.x)*(a.x-b.x) + (a.y-b.y)*(a.y-b.y)) );  
@@ -121,7 +122,7 @@ double CIPhw3Dlg::angle(cv::Point center,cv::Point a,cv::Point b)
 /**
 tries to detect gesture using contours
 input must be a binary image
-if the original image is given ,dectection result will be added to it
+if the original image is given ,dectection result will be draw on it
 */
 int CIPhw3Dlg::detectGastureFromBinary(cv::Mat binimg,cv::Mat orgimg)
 {
@@ -134,6 +135,7 @@ int CIPhw3Dlg::detectGastureFromBinary(cv::Mat binimg,cv::Mat orgimg)
 		(setting -> c/c++ -> code generation -> RuntimeLibrary)
 	for others ,ref to https://stackoverflow.com/questions/18882760/debug-assertion-failed-expression-pfirstblock-phead
 	*/
+
 	vector<vector<cv::Point>> contours;
 	cv::findContours(binimg,contours,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
 		

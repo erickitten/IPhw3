@@ -11,16 +11,17 @@ using namespace std;
 //use default params
 ImageProcesser::ImageProcesser(void)
 {
-	hue_range[0] = 0; hue_range[1] = 180;
-	sal_range[0]= 0; sal_range[1] = 255;
-	ranges[0] = hue_range; ranges[1] = sal_range;
 	histSize[0] = 20; histSize[1] = 20;
 	channels[0] = 0; channels[1] = 1;
 	significanceDefectRatio = 0.05;
 	significanceDefectAngle = 90;
 }
 
-//static functions
+//static functions & variables
+
+float ImageProcesser::hue_range[2] = {0,180};
+float ImageProcesser::sal_range[2] = {0,255};
+const float* ImageProcesser::ranges[2] = {hue_range,sal_range};
 
 double ImageProcesser::pointDist(cv::Point a,cv::Point b)  
 {  
@@ -35,7 +36,6 @@ double ImageProcesser::angle(cv::Point center,cv::Point a,cv::Point b)
 	double dot = (a.x - center.x) * (b.x - center.x) + (a.y - center.y) * (b.y - center.y);
 	return (acos(dot / (dist1 * dist2))  * 180.0) / M_PI;
 }
-
 
 int ImageProcesser::detectGastureFromBinary(cv::Mat binimg,cv::Mat orgimg)
 {
@@ -92,17 +92,14 @@ int ImageProcesser::detectGastureFromBinary(cv::Mat binimg,cv::Mat orgimg)
 			cv::line(orgimg,maxitem.at(sigificantDefect.at(i)[0]),maxitem.at(sigificantDefect.at(i)[2]),cv::Scalar(0,0,255),2);
 			cv::line(orgimg,maxitem.at(sigificantDefect.at(i)[1]),maxitem.at(sigificantDefect.at(i)[2]),cv::Scalar(0,0,255),2);
 			//if(dectectionAngle.at(i)<95){
-				cv::circle(orgimg,maxitem.at(sigificantDefect.at(i)[2]),5,cv::Scalar(0,255,255),-1);
+			cv::circle(orgimg,maxitem.at(sigificantDefect.at(i)[2]),5,cv::Scalar(0,255,255),-1);
 			//}else{
 				//cv::circle(orgimg,maxitem.at(sigificantDefect.at(i)[2]),5,cv::Scalar(255,255,0),-1);
 			//}
 		}
 	}
-
 	return (int)sigificantDefect.size();
-
 }
-
 
 //clear current image and its related information
 void ImageProcesser::clearCurrent(void)
@@ -113,7 +110,6 @@ void ImageProcesser::clearCurrent(void)
 	verticalHistImage.release();
 	horizontalHistImage.release();
 }
-
 
 
 void ImageProcesser::process(cv::Mat in)
@@ -145,8 +141,39 @@ void ImageProcesser::process(cv::Mat in)
 		cv::line( verticalHistImage,cv::Point(0,i),cv::Point((int)vph.at<double>(i,0)/(2*255),i),CV_RGB(255,255,255));
 	}
 
+	detectionImage = currentImage.clone();
+	numOfDefect = detectGastureFromBinary(binaryImage,detectionImage);
+
 }
 
+void ImageProcesser::updateSampleHist(cv::Mat sample)
+{
+	cv::Mat hsv;
+	//convert to (Hue, Saturation, Value) space
+	//ref: https://zh.wikipedia.org/wiki/HSL%E5%92%8CHSV%E8%89%B2%E5%BD%A9%E7%A9%BA%E9%97%B4
+	cv::cvtColor( sample, hsv, CV_BGR2HSV );
+
+	cv::calcHist(&hsv, 1, channels, cv::Mat(), sampleHist, 2, histSize, ranges, true, false );
+	normalize( sampleHist, sampleHist, 0, 255, cv::NORM_MINMAX, -1, cv::Mat() );
+}
+
+CString ImageProcesser::getResultText()
+{
+	switch(numOfDefect){
+	case 0:
+		return _T("stone");
+		break;
+	case 1:
+		return _T("scissor");
+		break;
+	case 4:
+		return _T("paper");
+		break;
+	default:
+		_T("undefined");
+		break;
+	}
+}
 
 ImageProcesser::~ImageProcesser(void)
 {

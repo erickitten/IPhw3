@@ -102,9 +102,12 @@ int ImageProcesser::detectGastureFromBinary(cv::Mat binimg,cv::Mat orgimg)
 	return (int)sigificantDefect.size();
 }
 
-
+//show the Mat on picture control
 void ImageProcesser::ShowMat( cv::Mat m_matCVImg,CStatic &m_staticImage)  
 {
+	/*
+	modified from http://kvy.com.ua/transformation-of-opencv-image-to-mfc-image-in-msvc-project/
+	*/
 	cv::Size m_sizeShow;
 	CImage* m_pImg =NULL;
 
@@ -187,7 +190,8 @@ void ImageProcesser::process(cv::Mat in)
 	cv::cvtColor( currentImage, hsv, CV_BGR2HSV );
 	cv::calcBackProject( &hsv, 1, channels,sampleHist, backProjection, ranges, 1.0, true );
 
-	cv::threshold(backProjection, binaryImage, 3, 255, CV_THRESH_BINARY /*| CV_THRESH_OTSU*/);
+	cv::threshold(backProjection, binaryImage, 3, 255, CV_THRESH_BINARY);
+
 	//must use floating point Mat at output
 	cv::reduce(binaryImage,hph,0,CV_REDUCE_SUM,CV_64FC1);
 	cv::reduce(binaryImage,vph,1,CV_REDUCE_SUM,CV_64FC1);
@@ -220,13 +224,17 @@ void ImageProcesser::updateSampleHist(cv::Mat sample)
 	normalize( sampleHist, sampleHist, 0, 255, cv::NORM_MINMAX, -1, cv::Mat() );
 }
 
-DO_IMG_GETTER(currentImage,getCurrentImage);
-DO_IMG_GETTER_CVT(backProjection,getBackProjection);
-DO_IMG_GETTER_CVT(binaryImage,getBinaryImage);
-DO_IMG_GETTER_CVT(verticalHistImage,getVerticalHistImage);
-DO_IMG_GETTER_CVT(horizontalHistImage,getHorizontalHistImage);
-DO_IMG_GETTER(detectionImage,getDetectionImage);
+DO_IMG_GETTER(currentImage,getCurrentImage)
+DO_IMG_GETTER_CVT(backProjection,getBackProjection)
+DO_IMG_GETTER_CVT(binaryImage,getBinaryImage)
+DO_IMG_GETTER_CVT(verticalHistImage,getVerticalHistImage)
+DO_IMG_GETTER_CVT(horizontalHistImage,getHorizontalHistImage)
+DO_IMG_GETTER(detectionImage,getDetectionImage)
 
+int ImageProcesser::geNnumOfDefect()
+{
+	return numOfDefect;
+}
 
 void ImageProcesser::getAllImages(cv::Mat *org,cv::Mat *backProj,cv::Mat *binary,cv::Mat *vertHist,cv::Mat *horiHist,cv::Mat *detect)
 {

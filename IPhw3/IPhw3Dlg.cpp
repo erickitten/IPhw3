@@ -61,6 +61,9 @@ BOOL CIPhw3Dlg::OnInitDialog()
 	//AllocConsole();//this only work in debug build
 	//FILE* pCout;
 	//freopen_s (&pCout,"CONOUT$","w", stdout );//freopen may be unsafe
+	cv::Mat samp;
+	samp = cv::imread("default_sample_1.jpg", CV_LOAD_IMAGE_COLOR);
+	ip.updateSampleHist(samp);
 
 	return TRUE;  // 傳回 TRUE，除非您對控制項設定焦點
 }
@@ -104,16 +107,13 @@ HCURSOR CIPhw3Dlg::OnQueryDragIcon()
 
 void CIPhw3Dlg::OnBnClickedLoad()
 {
-	cv::Mat src,samp;
+	cv::Mat src;
 	CFileDialog opdig(TRUE, NULL,NULL,OFN_FILEMUSTEXIST | OFN_HIDEREADONLY,_T("All Files (*.*)|*.*||"));
-	ImageProcesser ip;
+
 
 	if (opdig.DoModal() == IDOK){
 		CT2A ascii(opdig.GetPathName());//CString -> const char*
 		src = cv::imread(ascii.m_psz, CV_LOAD_IMAGE_COLOR);
-		samp = cv::imread("default_sample_1.jpg", CV_LOAD_IMAGE_COLOR);
-
-		ip.updateSampleHist(samp);
 		ip.process(src);
 		//Skin detection ends here
 		

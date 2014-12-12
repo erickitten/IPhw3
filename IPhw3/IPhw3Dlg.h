@@ -25,6 +25,7 @@ public:
 // 程式碼實作
 protected:
 	HICON m_hIcon;
+	ImageProcesser ip;
 
 	// 產生的訊息對應函式
 	virtual BOOL OnInitDialog();

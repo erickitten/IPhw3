@@ -42,7 +42,7 @@ void CIPhw3Dlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CIPhw3Dlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
-
+	ON_MESSAGE(WM_KICKIDLE, OnKickIdle)
 	ON_BN_CLICKED(STATIC_LOAD, &CIPhw3Dlg::OnBnClickedLoad)
 END_MESSAGE_MAP()
 
@@ -64,6 +64,7 @@ BOOL CIPhw3Dlg::OnInitDialog()
 	cv::Mat samp;
 	samp = cv::imread("default_sample_1.jpg", CV_LOAD_IMAGE_COLOR);
 	ip.updateSampleHist(samp);
+	vidIn.open(0);
 
 	return TRUE;  // 傳回 TRUE，除非您對控制項設定焦點
 }
@@ -104,6 +105,17 @@ HCURSOR CIPhw3Dlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+LRESULT	CIPhw3Dlg::OnKickIdle(WPARAM,LPARAM)
+{
+	if(vidIn.isOpened()){
+		cv::Mat cam;
+		vidIn.read(cam);
+		ip.process(cam);
+		ImageProcesser::ShowMat(ip.getDetectionImage(),displayOrgimg);
+	}
+	UpdateDialogControls(this,FALSE);
+	return	0;
+}
 
 void CIPhw3Dlg::OnBnClickedLoad()
 {
@@ -130,8 +142,7 @@ void CIPhw3Dlg::OnBnClickedLoad()
 		cv::namedWindow("detection result", CV_WINDOW_NORMAL );
 		cv::imshow("detection result",ip.getDetectionImage());
 
-		static_resultstr = ip.getResultText();
-		ImageProcesser::ShowMat(ip.getBinaryImage(),displayOrgimg);
+		static_resultstr = ip.getResultText();		
 		UpdateData(FALSE);
 
 		cv::waitKey(0);

@@ -71,8 +71,8 @@ int ImageProcesser::detectGastureFromBinary(cv::Mat binimg,cv::Mat orgimg)
 	
 	cv::convexityDefects(maxitem,hull,defect);
 	//determine sigificance (if it counts as hole bewteen finger)
-	vector<cv::Vec4i>sigificantDefect;
-	vector<double>dectectionAngle;
+	vector<cv::Vec4i> sigificantDefect;
+	vector<double> dectectionAngle;
 	for(int i=0;i<defect.size();i++){
 		double defectArea = (pointDist(maxitem.at(defect.at(i)[0]),maxitem.at(defect.at(i)[1])) * (double)(defect.at(i)[3] >> 8)) /2;
 		double defectAngle = angle(maxitem.at(defect.at(i)[2]),maxitem.at(defect.at(i)[0]),maxitem.at(defect.at(i)[1]));
@@ -92,10 +92,10 @@ int ImageProcesser::detectGastureFromBinary(cv::Mat binimg,cv::Mat orgimg)
 		for(int i=0;i<sigificantDefect.size();i++){
 			cv::line(orgimg,maxitem.at(sigificantDefect.at(i)[0]),maxitem.at(sigificantDefect.at(i)[2]),cv::Scalar(0,0,255),2);
 			cv::line(orgimg,maxitem.at(sigificantDefect.at(i)[1]),maxitem.at(sigificantDefect.at(i)[2]),cv::Scalar(0,0,255),2);
-			//if(dectectionAngle.at(i)<95){
+			//if(dectectionAngle.at(i)<significanceDefectAngle){
 			cv::circle(orgimg,maxitem.at(sigificantDefect.at(i)[2]),5,cv::Scalar(0,255,255),-1);
 			//}else{
-				//cv::circle(orgimg,maxitem.at(sigificantDefect.at(i)[2]),5,cv::Scalar(255,255,0),-1);
+			//cv::circle(orgimg,maxitem.at(sigificantDefect.at(i)[2]),5,cv::Scalar(255,255,0),-1);
 			//}
 		}
 	}

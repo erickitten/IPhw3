@@ -8,6 +8,8 @@
 #include <opencv2/core/core.hpp>
 #include "afxwin.h"
 
+#include "ImageProcesser.h"
+
 // CIPhw3Dlg 對話方塊
 class CIPhw3Dlg : public CDialogEx
 {
@@ -26,13 +28,15 @@ public:
 protected:
 	HICON m_hIcon;
 	ImageProcesser ip;
+	cv::VideoCapture vidIn;
 
 	// 產生的訊息對應函式
 	virtual BOOL OnInitDialog();
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
-	DECLARE_MESSAGE_MAP()
+	DECLARE_MESSAGE_MAP()	
 public:
+	afx_msg	LRESULT	OnKickIdle(WPARAM,LPARAM);
 	afx_msg void OnBnClickedLoad();
 	CString static_resultstr;
 	CStatic displayOrgimg;

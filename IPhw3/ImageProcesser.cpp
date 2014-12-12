@@ -6,6 +6,7 @@
 #include <opencv2/core/core.hpp>
 #include <cmath>
 
+
 using namespace std;
 
 //use default params
@@ -119,7 +120,7 @@ void ImageProcesser::process(cv::Mat in)
 	//clean out previous data
 	this->clearCurrent();
 
-	currentImage = in;
+	currentImage = in.clone();
 	cv::cvtColor( currentImage, hsv, CV_BGR2HSV );
 	cv::calcBackProject( &hsv, 1, channels,sampleHist, backProjection, ranges, 1.0, true );
 
@@ -142,8 +143,7 @@ void ImageProcesser::process(cv::Mat in)
 	}
 
 	detectionImage = currentImage.clone();
-	numOfDefect = detectGastureFromBinary(binaryImage,detectionImage);
-
+	numOfDefect = detectGastureFromBinary(binaryImage.clone(),detectionImage);
 }
 
 void ImageProcesser::updateSampleHist(cv::Mat sample)
@@ -155,6 +155,43 @@ void ImageProcesser::updateSampleHist(cv::Mat sample)
 
 	cv::calcHist(&hsv, 1, channels, cv::Mat(), sampleHist, 2, histSize, ranges, true, false );
 	normalize( sampleHist, sampleHist, 0, 255, cv::NORM_MINMAX, -1, cv::Mat() );
+}
+
+DO_IMG_GETTER(currentImage,getCurrentImage);
+DO_IMG_GETTER(backProjection,getBackProjection);
+DO_IMG_GETTER(binaryImage,getBinaryImage);
+DO_IMG_GETTER(verticalHistImage,getVerticalHistImage);
+DO_IMG_GETTER(horizontalHistImage,getHorizontalHistImage);
+DO_IMG_GETTER(detectionImage,getDetectionImage);
+
+
+void ImageProcesser::getAllImages(cv::Mat *org,cv::Mat *backProj,cv::Mat *binary,cv::Mat *vertHist,cv::Mat *horiHist,cv::Mat *detect)
+{
+	if(org != NULL){
+		org->release();
+		*org = currentImage.clone();
+	}
+	if(backProj != NULL){
+		backProj->release();
+		*backProj = backProjection.clone();
+	}
+	if(binary != NULL){
+		binary->release();
+		*binary = binaryImage.clone();
+	}
+	if(vertHist != NULL){
+		vertHist->release();
+		*vertHist = verticalHistImage.clone();
+	}
+	if(horiHist != NULL){
+		horiHist->release();
+		*horiHist = horizontalHistImage.clone();
+	}
+	if(detect != NULL){
+		detect->release();
+		*detect = detectionImage.clone();
+	}
+
 }
 
 CString ImageProcesser::getResultText()

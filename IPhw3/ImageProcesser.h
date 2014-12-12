@@ -3,6 +3,14 @@
 #include <opencv2\highgui\highgui.hpp>
 #include <opencv2/core/core.hpp>
 
+#define DO_IMG_GETTER(name,getName) \
+	cv::Mat ImageProcesser:: ## getName ## () \
+	{ \
+	return name ## .clone(); \
+	}
+
+#define DEF_IMG_GETTER(getName)  \
+	cv::Mat getName ## ()
 
 class ImageProcesser
 {
@@ -29,16 +37,25 @@ protected:
 	cv::Mat detectionImage;
 	int numOfDefect;
 
-
 	int detectGastureFromBinary(cv::Mat binimg,cv::Mat orgimg);
 public:
+
+
 	ImageProcesser(void);
 	void clearCurrent();
 	void process(cv::Mat in);
 	void updateSampleHist(cv::Mat sample);
 
+	void getAllImages(cv::Mat *org,cv::Mat *backProjection,cv::Mat *binary,cv::Mat *verticalHist,cv::Mat *horizontalHist,cv::Mat *detection);
+	DEF_IMG_GETTER(getCurrentImage);
+	DEF_IMG_GETTER(getBackProjection);
+	DEF_IMG_GETTER(getBinaryImage);
+	DEF_IMG_GETTER(getVerticalHistImage);
+	DEF_IMG_GETTER(getHorizontalHistImage);
+	DEF_IMG_GETTER(getDetectionImage);
+	int geNnumOfDefect();
 	CString getResultText();
-	
+
 	~ImageProcesser(void);
 };
 

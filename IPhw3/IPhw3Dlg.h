@@ -6,6 +6,7 @@
 #include <opencv2\imgproc\imgproc.hpp>
 #include <opencv2\highgui\highgui.hpp>
 #include <opencv2/core/core.hpp>
+#include "afxwin.h"
 
 // CIPhw3Dlg 對話方塊
 class CIPhw3Dlg : public CDialogEx
@@ -25,17 +26,13 @@ public:
 protected:
 	HICON m_hIcon;
 
-	double pointDist(cv::Point a,cv::Point b);
-	double angle(cv::Point center,cv::Point a,cv::Point b);
-	int detectGastureFromBinary(cv::Mat binimg,cv::Mat orgimg = cv::Mat());
-	cv::Mat processSampleHist(cv::Mat sample);
 	// 產生的訊息對應函式
 	virtual BOOL OnInitDialog();
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
 public:
-
 	afx_msg void OnBnClickedLoad();
 	CString static_resultstr;
+	CStatic displayOrgimg;
 };

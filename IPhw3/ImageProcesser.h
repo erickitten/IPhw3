@@ -3,10 +3,20 @@
 #include <opencv2\highgui\highgui.hpp>
 #include <opencv2/core/core.hpp>
 
+
+
 #define DO_IMG_GETTER(name,getName) \
 	cv::Mat ImageProcesser:: ## getName ## () \
 	{ \
 	return name ## .clone(); \
+	}
+
+#define DO_IMG_GETTER_CVT(name,getName) \
+	cv::Mat ImageProcesser:: ## getName ## () \
+	{ \
+	cv::Mat cvt; \
+	cv::cvtColor( name, cvt, CV_GRAY2BGR );\
+	return cvt; \
 	}
 
 #define DEF_IMG_GETTER(getName)  \
@@ -19,6 +29,7 @@ protected:
 	static float sal_range[2];
 	static const float* ranges[2];
 	
+	//helper functions
 	static double pointDist(cv::Point a,cv::Point b);
 	static double angle(cv::Point center,cv::Point a,cv::Point b);
 	
@@ -39,7 +50,7 @@ protected:
 
 	int detectGastureFromBinary(cv::Mat binimg,cv::Mat orgimg);
 public:
-
+	static void ShowMat( cv::Mat m_matCVImg,CStatic &m_staticImage);
 
 	ImageProcesser(void);
 	void clearCurrent();

@@ -102,6 +102,69 @@ int ImageProcesser::detectGastureFromBinary(cv::Mat binimg,cv::Mat orgimg)
 	return (int)sigificantDefect.size();
 }
 
+
+void ImageProcesser::ShowMat( cv::Mat m_matCVImg,CStatic &m_staticImage)  
+{
+	cv::Size m_sizeShow;
+	CImage* m_pImg =NULL;
+
+	//1. Define MFC window size:
+	RECT r;
+	m_staticImage.GetClientRect(&r);
+	m_sizeShow = cv::Size(r.right, r.bottom);
+	//do DWORD alignment (cvMat only have 4-byte alignment ,there size must be dividiable by 4)
+	m_sizeShow.height = (m_sizeShow.height %4 ==0)?m_sizeShow.height:m_sizeShow.height - (m_sizeShow.height %4);
+	m_sizeShow.width = (m_sizeShow.width %4 ==0)?m_sizeShow.width:m_sizeShow.width - (m_sizeShow.width %4);
+ 
+	//2. The size of m_matCVImg is not always the same as an MFC window¡¦s:
+	cv::Mat matImgTmp;
+	if (m_matCVImg.size() != m_sizeShow)
+	{
+		matImgTmp = cv::Mat(m_sizeShow, CV_8UC3);
+		cv::resize(m_matCVImg, matImgTmp, m_sizeShow, 0, 0, cv::INTER_AREA);
+	} else {
+		matImgTmp = m_matCVImg.clone();
+	}
+ 
+	//3. Rotate the image:
+	cv::flip(matImgTmp, matImgTmp, 0);
+ 
+	//4. Create an MFC image:
+	m_pImg = new CImage;
+	m_pImg->Create(m_sizeShow.width, m_sizeShow.height, 24);
+ 
+	//5. For m_pImg you need a header. Create it by using BITMAPINFO structure
+	BITMAPINFO bitInfo;
+	bitInfo.bmiHeader.biBitCount = 24;
+	bitInfo.bmiHeader.biWidth = m_sizeShow.width;
+	bitInfo.bmiHeader.biHeight = m_sizeShow.height;
+	bitInfo.bmiHeader.biPlanes = 1;
+	bitInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	bitInfo.bmiHeader.biCompression = BI_RGB;
+	bitInfo.bmiHeader.biClrImportant =
+		bitInfo.bmiHeader.biClrUsed =
+		bitInfo.bmiHeader.biSizeImage =
+		bitInfo.bmiHeader.biXPelsPerMeter =
+		bitInfo.bmiHeader.biYPelsPerMeter = 0;
+ 
+	//6. Add header and OpenCV image¡¦s data to m_pImg
+	StretchDIBits(m_pImg->GetDC(), 0, 0,
+    m_sizeShow.width, m_sizeShow.height, 0, 0,
+    m_sizeShow.width, m_sizeShow.height,
+    matImgTmp.data, &bitInfo, DIB_RGB_COLORS, SRCCOPY);
+ 
+	//7. Display m_pImg in MFC window
+	m_pImg->BitBlt(::GetDC(m_staticImage.m_hWnd), 0, 0);
+ 
+	//8. (Optional) Release m_pImg, if you will not use it:
+	if (m_pImg)
+	{
+		m_pImg->ReleaseDC();
+		delete m_pImg;
+		m_pImg = NULL;
+	}
+}
+
 //clear current image and its related information
 void ImageProcesser::clearCurrent(void)
 {
@@ -158,10 +221,10 @@ void ImageProcesser::updateSampleHist(cv::Mat sample)
 }
 
 DO_IMG_GETTER(currentImage,getCurrentImage);
-DO_IMG_GETTER(backProjection,getBackProjection);
-DO_IMG_GETTER(binaryImage,getBinaryImage);
-DO_IMG_GETTER(verticalHistImage,getVerticalHistImage);
-DO_IMG_GETTER(horizontalHistImage,getHorizontalHistImage);
+DO_IMG_GETTER_CVT(backProjection,getBackProjection);
+DO_IMG_GETTER_CVT(binaryImage,getBinaryImage);
+DO_IMG_GETTER_CVT(verticalHistImage,getVerticalHistImage);
+DO_IMG_GETTER_CVT(horizontalHistImage,getHorizontalHistImage);
 DO_IMG_GETTER(detectionImage,getDetectionImage);
 
 
@@ -207,7 +270,7 @@ CString ImageProcesser::getResultText()
 		return _T("paper");
 		break;
 	default:
-		_T("undefined");
+		return _T("undefined");
 		break;
 	}
 }
@@ -215,3 +278,5 @@ CString ImageProcesser::getResultText()
 ImageProcesser::~ImageProcesser(void)
 {
 }
+
+

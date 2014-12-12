@@ -36,6 +36,7 @@ void CIPhw3Dlg::DoDataExchange(CDataExchange* pDX)
 	CDialogEx::DoDataExchange(pDX);
 	//  DDX_Text(pDX, STATIC_RESULT, static_resultstr);
 	DDX_Text(pDX, STATIC_RESULT, static_resultstr);
+	DDX_Control(pDX, DISPLAY_ORGIMG, displayOrgimg);
 }
 
 BEGIN_MESSAGE_MAP(CIPhw3Dlg, CDialogEx)
@@ -103,7 +104,7 @@ HCURSOR CIPhw3Dlg::OnQueryDragIcon()
 
 void CIPhw3Dlg::OnBnClickedLoad()
 {
-	cv::Mat src,hsv,samp,backproj,binimg,vph,hph,vphimg,hphimg;
+	cv::Mat src,samp;
 	CFileDialog opdig(TRUE, NULL,NULL,OFN_FILEMUSTEXIST | OFN_HIDEREADONLY,_T("All Files (*.*)|*.*||"));
 	ImageProcesser ip;
 
@@ -130,11 +131,11 @@ void CIPhw3Dlg::OnBnClickedLoad()
 		cv::imshow("detection result",ip.getDetectionImage());
 
 		static_resultstr = ip.getResultText();
+		ImageProcesser::ShowMat(ip.getBinaryImage(),displayOrgimg);
 		UpdateData(FALSE);
 
 		cv::waitKey(0);
 		cv::destroyAllWindows();
 	}
 }
-
 

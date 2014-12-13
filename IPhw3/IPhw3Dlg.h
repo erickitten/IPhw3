@@ -39,5 +39,6 @@ public:
 	afx_msg	LRESULT	OnKickIdle(WPARAM,LPARAM);
 	afx_msg void OnBnClickedLoad();
 	CString static_resultstr;
-	CStatic displayOrgimg;
+	CStatic resImgControl;
+	CStatic binImgControl;
 };

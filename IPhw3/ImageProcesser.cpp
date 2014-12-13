@@ -38,70 +38,6 @@ double ImageProcesser::angle(cv::Point center,cv::Point a,cv::Point b)
 	return (acos(dot / (dist1 * dist2))  * 180.0) / M_PI;
 }
 
-int ImageProcesser::detectGastureFromBinary(cv::Mat binimg,cv::Mat orgimg)
-{
-	/*
-	oh my god this finally worked!!!
-	the reason that it failed assert(_pFirstBlock == pHead)is the memory of the contours
-	is allocated by opencv dlls (findContours) ,but free in main program (alloc by A free by B)
-	crossing .dll boundary and therefore causing memory violations
-	change  MSVC Runtime library from "Multi-threaded Debug (/MTd)" to "Multi-threaded Debug DLL (/MDd)" helps
-		(setting -> c/c++ -> code generation -> RuntimeLibrary)
-	for others ,ref to https://stackoverflow.com/questions/18882760/debug-assertion-failed-expression-pfirstblock-phead
-	*/
-
-	vector<vector<cv::Point>> contours;
-	cv::findContours(binimg,contours,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
-		
-	//find the contour with maximum area
-	double maxarea = 0,area = 0;
-	int maxi = 0;
-	for(int i=0;i<contours.size();i++){
-		area = cv::contourArea(contours.at(i));
-		if(maxarea < area){
-			maxi = i;
-			maxarea = area;
-		}
-	}	
-	
-	vector<cv::Point> maxitem = contours.at(maxi);
-	vector<int>hull;
-	vector<cv::Vec4i>defect;
-	cv::convexHull(maxitem,hull);
-	
-	cv::convexityDefects(maxitem,hull,defect);
-	//determine sigificance (if it counts as hole bewteen finger)
-	vector<cv::Vec4i> sigificantDefect;
-	vector<double> dectectionAngle;
-	for(int i=0;i<defect.size();i++){
-		double defectArea = (pointDist(maxitem.at(defect.at(i)[0]),maxitem.at(defect.at(i)[1])) * (double)(defect.at(i)[3] >> 8)) /2;
-		double defectAngle = angle(maxitem.at(defect.at(i)[2]),maxitem.at(defect.at(i)[0]),maxitem.at(defect.at(i)[1]));
-
-		if(defectArea > maxarea * significanceDefectRatio && defectAngle < significanceDefectAngle){
-			sigificantDefect.push_back(defect.at(i));
-			//dectectionAngle.push_back(defectAngle);
-		}
-	}
-
-
-	if(!orgimg.empty() && binimg.size() == orgimg.size()){
-		drawContours(orgimg,contours,maxi,cv::Scalar(255,0,0));
-		for(int i=1;i<hull.size();i++){//draw hull
-			cv::line(orgimg,maxitem.at(hull.at(i-1)),maxitem.at(hull.at(i)),cv::Scalar(0,255,0),2);
-		}
-		for(int i=0;i<sigificantDefect.size();i++){
-			cv::line(orgimg,maxitem.at(sigificantDefect.at(i)[0]),maxitem.at(sigificantDefect.at(i)[2]),cv::Scalar(0,0,255),2);
-			cv::line(orgimg,maxitem.at(sigificantDefect.at(i)[1]),maxitem.at(sigificantDefect.at(i)[2]),cv::Scalar(0,0,255),2);
-			//if(dectectionAngle.at(i)<significanceDefectAngle){
-			cv::circle(orgimg,maxitem.at(sigificantDefect.at(i)[2]),5,cv::Scalar(0,255,255),-1);
-			//}else{
-			//cv::circle(orgimg,maxitem.at(sigificantDefect.at(i)[2]),5,cv::Scalar(255,255,0),-1);
-			//}
-		}
-	}
-	return (int)sigificantDefect.size();
-}
-
 //show the Mat on picture control
 void ImageProcesser::ShowMat( cv::Mat m_matCVImg,CStatic &m_staticImage)  
 {
@@ -168,6 +104,82 @@ void ImageProcesser::ShowMat( cv::Mat m_matCVImg,CStatic &m_staticImage)
 	}
 }
 
+void ImageProcesser::extractSkinBinary(cv::Mat in,cv::Mat out)
+{
+
+}
+
+int ImageProcesser::detectGastureFromBinary(cv::Mat binimg,cv::Mat orgimg)
+{
+	/*
+	oh my god this finally worked!!!
+	the reason that it failed assert(_pFirstBlock == pHead)is the memory of the contours
+	is allocated by opencv dlls (findContours) ,but free in main program (alloc by A free by B)
+	crossing .dll boundary and therefore causing memory violations
+	change  MSVC Runtime library from "Multi-threaded Debug (/MTd)" to "Multi-threaded Debug DLL (/MDd)" helps
+		(setting -> c/c++ -> code generation -> RuntimeLibrary)
+	for others ,ref to https://stackoverflow.com/questions/18882760/debug-assertion-failed-expression-pfirstblock-phead
+	*/
+
+	vector<vector<cv::Point>> contours;
+	cv::findContours(binimg,contours,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
+
+
+	//find the contour with maximum area
+	double maxarea = 0,area = 0;
+	int maxi = 0;
+	for(int i=0;i<contours.size();i++){
+		area = cv::contourArea(contours.at(i));
+		if(maxarea < area){
+			maxi = i;
+			maxarea = area;
+		}
+	}
+	vector<cv::Point> maxitem;
+	if(!contours.empty() && contours.size() > 500){
+		maxitem = contours.at(maxi);
+	}else{//no contour found		
+		return -1;
+	}
+	vector<int>hull;
+	vector<cv::Vec4i>defect;
+	cv::convexHull(maxitem,hull);
+	
+	cv::convexityDefects(maxitem,hull,defect);
+
+	//determine sigificance (if it counts as hole bewteen finger)
+	vector<cv::Vec4i> sigificantDefect;
+	for(int i=0;i<defect.size();i++){
+		double defectArea = (pointDist(maxitem.at(defect.at(i)[0]),maxitem.at(defect.at(i)[1])) * (double)(defect.at(i)[3] >> 8)) /2;
+		double defectAngle = angle(maxitem.at(defect.at(i)[2]),maxitem.at(defect.at(i)[0]),maxitem.at(defect.at(i)[1]));
+
+		if(defectArea > maxarea * significanceDefectRatio && defectAngle < significanceDefectAngle){
+			sigificantDefect.push_back(defect.at(i));
+			//dectectionAngle.push_back(defectAngle);
+		}
+	}
+
+
+	if(!orgimg.empty() && binimg.size() == orgimg.size()){
+		drawContours(orgimg,contours,maxi,cv::Scalar(255,0,0));
+		for(int i=1;i<hull.size();i++){//draw hull
+			cv::line(orgimg,maxitem.at(hull.at(i-1)),maxitem.at(hull.at(i)),cv::Scalar(0,255,0),2);
+		}
+		for(int i=0;i<sigificantDefect.size();i++){
+			cv::line(orgimg,maxitem.at(sigificantDefect.at(i)[0]),maxitem.at(sigificantDefect.at(i)[2]),cv::Scalar(0,0,255),2);
+			cv::line(orgimg,maxitem.at(sigificantDefect.at(i)[1]),maxitem.at(sigificantDefect.at(i)[2]),cv::Scalar(0,0,255),2);
+			//if(dectectionAngle.at(i)<significanceDefectAngle){
+			cv::circle(orgimg,maxitem.at(sigificantDefect.at(i)[2]),5,cv::Scalar(0,255,255),-1);
+			//}else{
+			//cv::circle(orgimg,maxitem.at(sigificantDefect.at(i)[2]),5,cv::Scalar(255,255,0),-1);
+			//}
+		}
+	}
+	return (int)sigificantDefect.size();
+}
+
+
+
 //clear current image and its related information
 void ImageProcesser::clearCurrent(void)
 {
@@ -181,16 +193,20 @@ void ImageProcesser::clearCurrent(void)
 
 void ImageProcesser::process(cv::Mat in)
 {
-	cv::Mat hsv,hph,vph;
+	cv::Mat blur,hsv,bin,hph,vph;
 
 	//clean out previous data
 	this->clearCurrent();
 
 	currentImage = in.clone();
+	//cv::GaussianBlur(currentImage,blur,cv::Size(7,7),0,0);
 	cv::cvtColor( currentImage, hsv, CV_BGR2HSV );
-	cv::calcBackProject( &hsv, 1, channels,sampleHist, backProjection, ranges, 1.0, true );
 
+	
+	//cv::inRange( hsv,cv::Scalar(5,25, 0,0), cv::Scalar(26,175,255,0),binaryImage);
+	cv::calcBackProject( &hsv, 1, channels,sampleHist, backProjection, ranges, 1.0, true );
 	cv::threshold(backProjection, binaryImage, 3, 255, CV_THRESH_BINARY);
+	//cv::dilate(bin,binaryImage,0);
 
 	//must use floating point Mat at output
 	cv::reduce(binaryImage,hph,0,CV_REDUCE_SUM,CV_64FC1);

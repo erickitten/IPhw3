@@ -36,7 +36,9 @@ void CIPhw3Dlg::DoDataExchange(CDataExchange* pDX)
 	CDialogEx::DoDataExchange(pDX);
 	//  DDX_Text(pDX, STATIC_RESULT, static_resultstr);
 	DDX_Text(pDX, STATIC_RESULT, static_resultstr);
-	DDX_Control(pDX, DISPLAY_ORGIMG, displayOrgimg);
+
+	DDX_Control(pDX, DISPLAY_RESIMG, resImgControl);
+	DDX_Control(pDX, DISPLAY_BINIMG, binImgControl);
 }
 
 BEGIN_MESSAGE_MAP(CIPhw3Dlg, CDialogEx)
@@ -111,7 +113,8 @@ LRESULT	CIPhw3Dlg::OnKickIdle(WPARAM,LPARAM)
 		cv::Mat cam;
 		vidIn.read(cam);
 		ip.process(cam);
-		ImageProcesser::ShowMat(ip.getDetectionImage(),displayOrgimg);
+		ImageProcesser::ShowMat(ip.getDetectionImage(),resImgControl);
+		ImageProcesser::ShowMat(ip.getBinaryImage(),binImgControl);
 	}
 	UpdateDialogControls(this,FALSE);
 	return	0;
@@ -129,8 +132,8 @@ void CIPhw3Dlg::OnBnClickedLoad()
 		ip.process(src);
 		//Skin detection ends here
 		
-		cv::namedWindow("back projection", CV_WINDOW_NORMAL );
-		cv::imshow("back projection",ip.getBackProjection());
+		//cv::namedWindow("back projection", CV_WINDOW_NORMAL );
+		//cv::imshow("back projection",ip.getBackProjection());
 		cv::namedWindow("threshold", CV_WINDOW_NORMAL );
 		cv::imshow("threshold",ip.getBinaryImage());
 		

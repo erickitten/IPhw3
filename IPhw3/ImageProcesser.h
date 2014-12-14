@@ -32,7 +32,10 @@ protected:
 	
 	//image processing params
 	double significanceDefectRatio;
-	double significanceDefectAngle;	
+	double significanceDefectAngle;
+	int lowHue,highHue;
+	int lowSaturation,highSaturation;
+
 
 	
 	cv::Mat currentImage;

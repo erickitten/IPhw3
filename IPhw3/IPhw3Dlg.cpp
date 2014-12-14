@@ -126,10 +126,12 @@ LRESULT	CIPhw3Dlg::OnKickIdle(WPARAM,LPARAM)
 	if(vidIn.isOpened()){
 		cv::Mat cam;
 		vidIn.read(cam);
-		ip.process(cam);
-		ImageProcesser::ShowMat(ip.getDetectionImage(),resImgControl);
-		ImageProcesser::ShowMat(ip.getBinaryImage(),binImgControl);
-		nowplay =  ip.getResultText();
+		if(!cam.empty()){
+			ip.process(cam);
+			ImageProcesser::ShowMat(ip.getDetectionImage(),resImgControl);
+			ImageProcesser::ShowMat(ip.getBinaryImage(),binImgControl);
+			nowplay =  ip.getResultText();
+		}
 	}
 	UpdateDialogControls(this,FALSE);
 	UpdateData(FALSE);

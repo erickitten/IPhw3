@@ -4,6 +4,7 @@
 #include <opencv2\imgproc\imgproc.hpp>
 #include <opencv2\highgui\highgui.hpp>
 #include <opencv2/core/core.hpp>
+//#include <opencv2\photo\photo.hpp>
 #include <cmath>
 
 
@@ -14,6 +15,8 @@ ImageProcesser::ImageProcesser(void)
 {
 	significanceDefectRatio = 0.05;
 	significanceDefectAngle = 90;
+	lowHue = 0,highHue = 25;
+	lowSaturation = 45,highSaturation = 190;
 }
 
 //static functions & variables
@@ -184,16 +187,21 @@ void ImageProcesser::clearCurrent(void)
 
 void ImageProcesser::process(cv::Mat in)
 {
-	cv::Mat blur,hsv,bin,hph,vph;
+	cv::Mat blur,hsv,hph,vph;
 
 	//clean out previous data
 	this->clearCurrent();
 
-	cv::bilateralFilter(in,currentImage,5,70,70);	//deal with camera noise
+	currentImage = in.clone();
+	//cv::bilateralFilter(in,currentImage,5,65,65);	//deal with camera noise
 	cv::cvtColor( currentImage, hsv, CV_BGR2HSV );
 	
-	cv::inRange( hsv,cv::Scalar(0,45,10,0), cv::Scalar(25,190,255,0),bin);
-	cv::dilate(bin,binaryImage,cv::Mat());
+	cv::inRange( hsv,cv::Scalar(lowHue,lowSaturation,10,0), cv::Scalar(highHue,highSaturation,255,0),binaryImage);
+	
+	cv::Mat kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE,cv::Size(9,9));
+	cv::morphologyEx(binaryImage,binaryImage,cv::MORPH_CLOSE,kernel);
+	cv::morphologyEx(binaryImage,binaryImage,cv::MORPH_OPEN,kernel);
+
 
 	//must use floating point Mat at output
 	cv::reduce(binaryImage,hph,0,CV_REDUCE_SUM,CV_64FC1);

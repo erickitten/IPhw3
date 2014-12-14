@@ -65,7 +65,6 @@ BOOL CIPhw3Dlg::OnInitDialog()
 	//freopen_s (&pCout,"CONOUT$","w", stdout );//freopen may be unsafe
 	cv::Mat samp;
 	samp = cv::imread("default_sample_1.jpg", CV_LOAD_IMAGE_COLOR);
-	ip.updateSampleHist(samp);
 	vidIn.open(0);
 
 	return TRUE;  // 傳回 TRUE，除非您對控制項設定焦點
@@ -132,8 +131,6 @@ void CIPhw3Dlg::OnBnClickedLoad()
 		ip.process(src);
 		//Skin detection ends here
 		
-		//cv::namedWindow("back projection", CV_WINDOW_NORMAL );
-		//cv::imshow("back projection",ip.getBackProjection());
 		cv::namedWindow("threshold", CV_WINDOW_NORMAL );
 		cv::imshow("threshold",ip.getBinaryImage());
 		

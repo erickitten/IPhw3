@@ -12,17 +12,11 @@ using namespace std;
 //use default params
 ImageProcesser::ImageProcesser(void)
 {
-	histSize[0] = 20; histSize[1] = 20;
-	channels[0] = 0; channels[1] = 1;
 	significanceDefectRatio = 0.05;
 	significanceDefectAngle = 90;
 }
 
 //static functions & variables
-
-float ImageProcesser::hue_range[2] = {0,180};
-float ImageProcesser::sal_range[2] = {0,255};
-const float* ImageProcesser::ranges[2] = {hue_range,sal_range};
 
 double ImageProcesser::pointDist(cv::Point a,cv::Point b)  
 {  
@@ -180,7 +174,6 @@ int ImageProcesser::detectGastureFromBinary(cv::Mat binimg,cv::Mat orgimg)
 void ImageProcesser::clearCurrent(void)
 {
 	currentImage.release();
-	backProjection.release();
 	binaryImage.release();
 	verticalHistImage.release();
 	horizontalHistImage.release();
@@ -195,13 +188,10 @@ void ImageProcesser::process(cv::Mat in)
 	this->clearCurrent();
 
 	//currentImage = in.clone();
-	//cv::GaussianBlur(currentImage,blur,cv::Size(7,7),0,0);
 	cv::bilateralFilter(in,currentImage,5,70,70);
 	cv::cvtColor( currentImage, hsv, CV_BGR2HSV );
 	
 	cv::inRange( hsv,cv::Scalar(0,40,10,0), cv::Scalar(25,195,255,0),bin);
-	//cv::calcBackProject( &hsv, 1, channels,sampleHist, backProjection, ranges, 1.0, true );
-	//cv::threshold(backProjection, bin, 3, 255, CV_THRESH_BINARY);
 	cv::dilate(bin,binaryImage,cv::Mat());
 
 	//must use floating point Mat at output
@@ -225,19 +215,7 @@ void ImageProcesser::process(cv::Mat in)
 	numOfDefect = detectGastureFromBinary(binaryImage.clone(),detectionImage);
 }
 
-void ImageProcesser::updateSampleHist(cv::Mat sample)
-{
-	cv::Mat hsv;
-	//convert to (Hue, Saturation, Value) space
-	//ref: https://zh.wikipedia.org/wiki/HSL%E5%92%8CHSV%E8%89%B2%E5%BD%A9%E7%A9%BA%E9%97%B4
-	cv::cvtColor( sample, hsv, CV_BGR2HSV );
-
-	cv::calcHist(&hsv, 1, channels, cv::Mat(), sampleHist, 2, histSize, ranges, true, false );
-	normalize( sampleHist, sampleHist, 0, 255, cv::NORM_MINMAX, -1, cv::Mat() );
-}
-
 DO_IMG_GETTER(currentImage,getCurrentImage)
-DO_IMG_GETTER_CVT(backProjection,getBackProjection)
 DO_IMG_GETTER_CVT(binaryImage,getBinaryImage)
 DO_IMG_GETTER_CVT(verticalHistImage,getVerticalHistImage)
 DO_IMG_GETTER_CVT(horizontalHistImage,getHorizontalHistImage)
@@ -248,34 +226,6 @@ int ImageProcesser::geNnumOfDefect()
 	return numOfDefect;
 }
 
-void ImageProcesser::getAllImages(cv::Mat *org,cv::Mat *backProj,cv::Mat *binary,cv::Mat *vertHist,cv::Mat *horiHist,cv::Mat *detect)
-{
-	if(org != NULL){
-		org->release();
-		*org = currentImage.clone();
-	}
-	if(backProj != NULL){
-		backProj->release();
-		*backProj = backProjection.clone();
-	}
-	if(binary != NULL){
-		binary->release();
-		*binary = binaryImage.clone();
-	}
-	if(vertHist != NULL){
-		vertHist->release();
-		*vertHist = verticalHistImage.clone();
-	}
-	if(horiHist != NULL){
-		horiHist->release();
-		*horiHist = horizontalHistImage.clone();
-	}
-	if(detect != NULL){
-		detect->release();
-		*detect = detectionImage.clone();
-	}
-
-}
 
 CString ImageProcesser::getResultText()
 {

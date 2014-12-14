@@ -104,10 +104,6 @@ void ImageProcesser::ShowMat( cv::Mat m_matCVImg,CStatic &m_staticImage)
 	}
 }
 
-void ImageProcesser::extractSkinBinary(cv::Mat in,cv::Mat out)
-{
-
-}
 
 int ImageProcesser::detectGastureFromBinary(cv::Mat binimg,cv::Mat orgimg)
 {
@@ -203,10 +199,10 @@ void ImageProcesser::process(cv::Mat in)
 	cv::cvtColor( currentImage, hsv, CV_BGR2HSV );
 
 	
-	//cv::inRange( hsv,cv::Scalar(5,25, 0,0), cv::Scalar(26,175,255,0),binaryImage);
-	cv::calcBackProject( &hsv, 1, channels,sampleHist, backProjection, ranges, 1.0, true );
-	cv::threshold(backProjection, binaryImage, 3, 255, CV_THRESH_BINARY);
-	//cv::dilate(bin,binaryImage,0);
+	cv::inRange( hsv,cv::Scalar(0,25, 0,0), cv::Scalar(26,175,255,0),bin);
+	//cv::calcBackProject( &hsv, 1, channels,sampleHist, backProjection, ranges, 1.0, true );
+	//cv::threshold(backProjection, binaryImage, 3, 255, CV_THRESH_BINARY);
+	cv::dilate(bin,binaryImage,cv::Mat());
 
 	//must use floating point Mat at output
 	cv::reduce(binaryImage,hph,0,CV_REDUCE_SUM,CV_64FC1);

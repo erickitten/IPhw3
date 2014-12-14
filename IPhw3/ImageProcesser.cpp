@@ -193,7 +193,7 @@ void ImageProcesser::process(cv::Mat in)
 	this->clearCurrent();
 
 	currentImage = in.clone();
-	//cv::bilateralFilter(in,currentImage,5,65,65);	//deal with camera noise
+	//cv::bilateralFilter(in,currentImage,5,250,250);	//deal with camera noise
 	cv::cvtColor( currentImage, hsv, CV_BGR2HSV );
 	
 	cv::inRange( hsv,cv::Scalar(lowHue,lowSaturation,10,0), cv::Scalar(highHue,highSaturation,255,0),binaryImage);

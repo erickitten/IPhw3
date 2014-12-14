@@ -132,7 +132,7 @@ int ImageProcesser::detectGastureFromBinary(cv::Mat binimg,cv::Mat orgimg)
 		}
 	}
 	vector<cv::Point> maxitem;
-	if(!contours.empty() && contours.size() > 500){
+	if(!contours.empty() && contours.at(maxi).size() > 500){
 		maxitem = contours.at(maxi);
 	}else{//no contour found		
 		return -1;
@@ -199,7 +199,7 @@ void ImageProcesser::process(cv::Mat in)
 	cv::cvtColor( currentImage, hsv, CV_BGR2HSV );
 
 	
-	cv::inRange( hsv,cv::Scalar(0,25, 0,0), cv::Scalar(26,175,255,0),bin);
+	cv::inRange( hsv,cv::Scalar(5,25, 0,0), cv::Scalar(26,175,255,0),bin);
 	//cv::calcBackProject( &hsv, 1, channels,sampleHist, backProjection, ranges, 1.0, true );
 	//cv::threshold(backProjection, binaryImage, 3, 255, CV_THRESH_BINARY);
 	cv::dilate(bin,binaryImage,cv::Mat());

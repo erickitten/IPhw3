@@ -29,6 +29,7 @@ protected:
 	HICON m_hIcon;
 	ImageProcesser ip;
 	cv::VideoCapture vidIn;
+	static const UINT ID_TIMER_SECOND = 0x1002;
 
 	// 產生的訊息對應函式
 	virtual BOOL OnInitDialog();
@@ -41,4 +42,11 @@ public:
 	CString static_resultstr;
 	CStatic resImgControl;
 	CStatic binImgControl;
+	afx_msg void OnBnClickedGamebtn();
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
+	int countDown;
+	CString playerPlays;
+	CString comPlays;
+	CString gameResult;
+	CString nowplay;
 };

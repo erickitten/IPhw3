@@ -27,6 +27,11 @@ using namespace std;
 CIPhw3Dlg::CIPhw3Dlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CIPhw3Dlg::IDD, pParent)
 	, static_resultstr(_T(""))
+	, countDown(0)
+	, playerPlays(_T(""))
+	, comPlays(_T(""))
+	, gameResult(_T(""))
+	, nowplay(_T(""))
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -39,6 +44,12 @@ void CIPhw3Dlg::DoDataExchange(CDataExchange* pDX)
 
 	DDX_Control(pDX, DISPLAY_RESIMG, resImgControl);
 	DDX_Control(pDX, DISPLAY_BINIMG, binImgControl);
+	DDX_Text(pDX, COUNT_DOWN, countDown);
+	DDV_MinMaxInt(pDX, countDown, 0, 10);
+	DDX_Text(pDX, PL_PLAYS, playerPlays);
+	DDX_Text(pDX, COM_PLAYS, comPlays);
+	DDX_Text(pDX, GAME_RES, gameResult);
+	DDX_Text(pDX, NOWPLAY, nowplay);
 }
 
 BEGIN_MESSAGE_MAP(CIPhw3Dlg, CDialogEx)
@@ -46,6 +57,8 @@ BEGIN_MESSAGE_MAP(CIPhw3Dlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_MESSAGE(WM_KICKIDLE, OnKickIdle)
 	ON_BN_CLICKED(STATIC_LOAD, &CIPhw3Dlg::OnBnClickedLoad)
+	ON_BN_CLICKED(GAMEBTN, &CIPhw3Dlg::OnBnClickedGamebtn)
+	ON_WM_TIMER()
 END_MESSAGE_MAP()
 
 
@@ -66,6 +79,8 @@ BOOL CIPhw3Dlg::OnInitDialog()
 	cv::Mat samp;
 	samp = cv::imread("default_sample_1.jpg", CV_LOAD_IMAGE_COLOR);
 	vidIn.open(0);
+
+	srand (time(NULL));
 
 	return TRUE;  // 傳回 TRUE，除非您對控制項設定焦點
 }
@@ -114,8 +129,11 @@ LRESULT	CIPhw3Dlg::OnKickIdle(WPARAM,LPARAM)
 		ip.process(cam);
 		ImageProcesser::ShowMat(ip.getDetectionImage(),resImgControl);
 		ImageProcesser::ShowMat(ip.getBinaryImage(),binImgControl);
+		nowplay =  ip.getResultText();
 	}
 	UpdateDialogControls(this,FALSE);
+	UpdateData(FALSE);
+
 	return	0;
 }
 
@@ -150,3 +168,46 @@ void CIPhw3Dlg::OnBnClickedLoad()
 	}
 }
 
+
+
+void CIPhw3Dlg::OnBnClickedGamebtn()
+{
+	countDown = 3;
+	SetTimer(ID_TIMER_SECOND,1000, NULL);
+	UpdateData(FALSE);
+}
+
+
+void CIPhw3Dlg::OnTimer(UINT_PTR nIDEvent)
+{
+	if(countDown > 0){
+		countDown--;
+		UpdateData(FALSE);
+	}else{
+		int pla = ip.getResultInt();
+		int com = rand() % 3;
+
+		playerPlays = ip.getResultText();
+		if(com == 0){
+			comPlays = _T("paper");
+		}else if(com == 1){
+			comPlays = _T("scissor");
+		}else{
+			comPlays = _T("stone");
+		}
+
+		if(pla < 0){
+			gameResult =  _T("unknown ");
+		}else if(pla == com){
+			gameResult =  _T("draw");
+		}else if(pla - com == 1 || (pla == 0 && com ==2)){
+			gameResult =  _T("you win! :)");
+		}else{
+			gameResult =  _T("you lose :(");
+		}
+		KillTimer(ID_TIMER_SECOND);
+		UpdateData(FALSE);
+	}
+
+	CDialogEx::OnTimer(nIDEvent);
+}

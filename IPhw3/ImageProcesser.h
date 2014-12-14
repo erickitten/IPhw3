@@ -58,6 +58,7 @@ public:
 	DEF_IMG_GETTER(getDetectionImage);
 	int geNnumOfDefect();
 	CString getResultText();
+	int getResultInt();
 
 	~ImageProcesser(void);
 };

@@ -138,12 +138,14 @@ int ImageProcesser::detectGastureFromBinary(cv::Mat binimg,cv::Mat orgimg)
 	cv::convexityDefects(maxitem,hull,defect);
 
 	//determine sigificance (if it counts as hole bewteen finger)
+	//by relative size / angle / direction
 	vector<cv::Vec4i> sigificantDefect;
 	for(int i=0;i<defect.size();i++){
 		double defectArea = (pointDist(maxitem.at(defect.at(i)[0]),maxitem.at(defect.at(i)[1])) * (double)(defect.at(i)[3] >> 8)) /2;
 		double defectAngle = angle(maxitem.at(defect.at(i)[2]),maxitem.at(defect.at(i)[0]),maxitem.at(defect.at(i)[1]));
+		int upward = maxitem.at(defect.at(i)[2]).y - (maxitem.at(defect.at(i)[0]).y + maxitem.at(defect.at(i)[1]).y) /2;
 
-		if(defectArea > maxarea * significanceDefectRatio && defectAngle < significanceDefectAngle){
+		if(defectArea > maxarea * significanceDefectRatio && defectAngle < significanceDefectAngle && upward >=0){
 			sigificantDefect.push_back(defect.at(i));
 			//dectectionAngle.push_back(defectAngle);
 		}
@@ -187,11 +189,10 @@ void ImageProcesser::process(cv::Mat in)
 	//clean out previous data
 	this->clearCurrent();
 
-	//currentImage = in.clone();
-	cv::bilateralFilter(in,currentImage,5,70,70);
+	cv::bilateralFilter(in,currentImage,5,70,70);	//deal with camera noise
 	cv::cvtColor( currentImage, hsv, CV_BGR2HSV );
 	
-	cv::inRange( hsv,cv::Scalar(0,40,10,0), cv::Scalar(25,195,255,0),bin);
+	cv::inRange( hsv,cv::Scalar(0,45,10,0), cv::Scalar(25,190,255,0),bin);
 	cv::dilate(bin,binaryImage,cv::Mat());
 
 	//must use floating point Mat at output
@@ -229,20 +230,30 @@ int ImageProcesser::geNnumOfDefect()
 
 CString ImageProcesser::getResultText()
 {
-	switch(numOfDefect){
-	case 0:
+	if(numOfDefect ==0){
 		return _T("stone");
-		break;
-	case 1:
-		return _T("scissor");
-		break;
-	case 4:
-		return _T("paper");
-		break;
-	default:
-		return _T("undefined");
-		break;
 	}
+	if(numOfDefect >0 && numOfDefect <4){
+		return _T("scissor");
+	}
+	if(numOfDefect >=4){
+		return _T("paper");
+	}
+	return _T("undefined");
+}
+
+int ImageProcesser::getResultInt()
+{
+	if(numOfDefect ==0){
+		return 2;
+	}
+	if(numOfDefect >0 && numOfDefect <4){
+		return 1;
+	}
+	if(numOfDefect >=4){
+		return 0;
+	}
+	return -1;
 }
 
 ImageProcesser::~ImageProcesser(void)

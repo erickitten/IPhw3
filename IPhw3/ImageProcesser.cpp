@@ -194,14 +194,14 @@ void ImageProcesser::process(cv::Mat in)
 	//clean out previous data
 	this->clearCurrent();
 
-	currentImage = in.clone();
+	//currentImage = in.clone();
 	//cv::GaussianBlur(currentImage,blur,cv::Size(7,7),0,0);
+	cv::bilateralFilter(in,currentImage,5,70,70);
 	cv::cvtColor( currentImage, hsv, CV_BGR2HSV );
-
 	
-	cv::inRange( hsv,cv::Scalar(5,25, 0,0), cv::Scalar(26,175,255,0),bin);
+	cv::inRange( hsv,cv::Scalar(0,40,10,0), cv::Scalar(25,195,255,0),bin);
 	//cv::calcBackProject( &hsv, 1, channels,sampleHist, backProjection, ranges, 1.0, true );
-	//cv::threshold(backProjection, binaryImage, 3, 255, CV_THRESH_BINARY);
+	//cv::threshold(backProjection, bin, 3, 255, CV_THRESH_BINARY);
 	cv::dilate(bin,binaryImage,cv::Mat());
 
 	//must use floating point Mat at output

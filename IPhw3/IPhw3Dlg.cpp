@@ -73,13 +73,7 @@ BOOL CIPhw3Dlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// 設定大圖示
 	SetIcon(m_hIcon, FALSE);		// 設定小圖示
 
-	//AllocConsole();//this only work in debug build
-	//FILE* pCout;
-	//freopen_s (&pCout,"CONOUT$","w", stdout );//freopen may be unsafe
-	cv::Mat samp;
-	samp = cv::imread("default_sample_1.jpg", CV_LOAD_IMAGE_COLOR);
 	vidIn.open(0);
-
 	srand (time(NULL));
 
 	return TRUE;  // 傳回 TRUE，除非您對控制項設定焦點
@@ -131,6 +125,8 @@ LRESULT	CIPhw3Dlg::OnKickIdle(WPARAM,LPARAM)
 			ImageProcesser::ShowMat(ip.getDetectionImage(),resImgControl);
 			ImageProcesser::ShowMat(ip.getBinaryImage(),binImgControl);
 			nowplay =  ip.getResultText();
+		}else{
+			nowplay = _T("waiting cam...");
 		}
 	}
 	UpdateDialogControls(this,FALSE);
